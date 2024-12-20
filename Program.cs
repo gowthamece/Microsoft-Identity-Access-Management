@@ -21,6 +21,22 @@ builder.Services.AddAuthorization(options =>
     // By default, all incoming requests will be authorized according to the default policy
     options.FallbackPolicy = options.DefaultPolicy;
 });
+builder.Services.Configure<OpenIdConnectOptions>(OpenIdConnectDefaults.AuthenticationScheme,
+    options =>
+    {
+        options.Events =
+        new OpenIdConnectEvents
+        {
+            OnRedirectToIdentityProviderForSignOut =
+        async context =>
+        {
+            var postLogoutRedirectUri = context.Request.Scheme + "://" + context.Request.Host + "/";
+            context.Properties.RedirectUri = postLogoutRedirectUri;
+            context.ProtocolMessage.PostLogoutRedirectUri = postLogoutRedirectUri; await Task.CompletedTask;
+        }
+        };
+    });
+
 
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor()
